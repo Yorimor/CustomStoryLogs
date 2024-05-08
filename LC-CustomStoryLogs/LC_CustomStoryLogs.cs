@@ -1,0 +1,196 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using BepInEx;
+using BepInEx.Logging;
+using HarmonyLib;
+using LethalLib.Modules;
+using LethalNetworkAPI;
+using UnityEngine;
+
+namespace CustomStoryLogs;
+
+public struct CustomLogData
+{
+    public string ModGUID;
+    public int LogID;
+    public bool Unlocked;
+    public bool Hidden;
+    public string LogName;
+    public string LogText;
+    public string Keyword;
+}
+
+public struct CollectableData
+{
+    public string ModGUID;
+    public Vector3 Position;
+    public Vector3 Rotation;
+    public int LogID;
+}
+
+[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInDependency(LethalLib.Plugin.ModGUID)]
+[BepInDependency(LethalNetworkAPI.MyPluginInfo.PLUGIN_GUID)]
+public class CustomStoryLogs : BaseUnityPlugin
+{
+    public static CustomStoryLogs Instance { get; private set; } = null!;
+    internal new static ManualLogSource Logger { get; private set; } = null!;
+    internal static Harmony? Harmony { get; set; }
+
+    private static List<string> UsedKeywords = new List<string>();
+    
+    public static Dictionary<int, CustomLogData> RegisteredLogs = new Dictionary<int, CustomLogData>();
+
+    public static Dictionary<string, List<CollectableData>> RegisteredCollectables =
+        new Dictionary<string, List<CollectableData>>();
+    
+    public static string UnlockedSaveKey = $"{LethalNetworkAPI.MyPluginInfo.PLUGIN_GUID}-Unlocked";
+
+    public static LethalNetworkVariable<List<int>> UnlockedNetVar = new LethalNetworkVariable<List<int>>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-Unlocked");
+    
+    LethalServerMessage<int> UnlockLogServer = new LethalServerMessage<int>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-UnlockLog");
+    LethalClientMessage<int> UnlockLogClient = new LethalClientMessage<int>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-UnlockLog");
+    
+    public static AssetBundle MyAssets;
+    public static GameObject CustomLogObj;
+    
+    private void Awake()
+    {
+        Logger = base.Logger;
+        Instance = this;
+        
+        string sAssemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        MyAssets = AssetBundle.LoadFromFile(Path.Combine(sAssemblyLocation, "yorimor.customlogs"));
+        if (MyAssets == null) {
+            Logger.LogError("Failed to load custom assets.");
+            return;
+        }
+        
+        CustomLogObj = MyAssets.LoadAsset<GameObject>("Assets/Yorimor/CustomStoryLogs/CustomStoryModel.prefab");
+        NetworkPrefabs.RegisterNetworkPrefab(CustomLogObj);
+
+        UnlockedNetVar.Value = new List<int>();
+        UnlockedNetVar.OnValueChanged += UnlockedUpdate;
+
+        UnlockLogServer.OnReceived += ReceiveUnlockFromClient;
+        UnlockLogClient.OnReceived += ReceiveUnlockMsgFromServer;
+
+        Patch();
+
+        UsedKeywords =
+        [
+            "buy", "pro flashlight", "money", "confirm", "deny", "help", "info", "store", "pro flashlight",
+            "survival kit", "flashlight", "lockpicker", "mapper", "shovel", "jetpack", "boombox", "bestiary", "stun",
+            "reset credits", "view", "inside cam", "moons", "vow", "experimentation", "assurance", "offense",
+            "adamance", "route", "television", "teleporter", "rend", "march", "dine", "titan", "artifice", "embrion",
+            "company", "walkie-talkie", "spray paint", "brackens", "forest keeper", "earth leviathan", "lasso",
+            "spore lizards", "snare fleas", "eyeless dogs", "hoarding bugs", "bunker spiders", "hygroderes",
+            "coil-heads", "manticoils", "baboon hawks", "nutcracker", "old birds", "butler", "circuit bees", "locusts",
+            "thumpers", "jester", "decor", "upgrades", "tzp", "green suit", "hazard suit", "pajama suit", "cozy lights",
+            "sigurd", "signal", "toilet", "record", "shower", "table", "romantic table", "file cabinet", "cupboard",
+            "bunkbeds", "storage", "other", "scan", "b3", "c1", "c2", "c7", "d6", "f2", "h5", "i1", "j6", "k9", "l0",
+            "m6", "m9", "o5", "p1", "r2", "r4", "t2", "u2", "u9", "v0", "x8", "y9", "z3", "first", "smells", "swing",
+            "shady", "sound", "goodbye", "screams", "golden", "idea", "nonsense", "hiding", "desmond", "real",
+            "zap gun", "monitor", "switch", "loud horn", "extension ladder", "inverse teleporter", "jackolantern",
+            "radar", "eject", "welcome mat", "goldfish", "plushie pajama man", "purple suit", "purple", "bee", "bunny",
+            "disco", "tulip"
+        ];
+
+        RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "test log", "test\nunlocked\nnot hidden", true, false);
+        int zurokLog = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "zurok log", "test\nzurok\nnot unlocked\nnot hidden", false, false);
+        RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "hidden log", "test\nhidden\nunlocked", true, true);
+        
+        RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, zurokLog, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero);
+        
+        Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} loaded!");
+    }
+
+    internal static void Patch()
+    {
+        Harmony ??= new Harmony(MyPluginInfo.PLUGIN_GUID);
+        Harmony.PatchAll();
+    }
+
+    internal static void Unpatch()
+    {
+        Harmony?.UnpatchSelf();
+    }
+
+    public void UnlockedUpdate(List<int> newUnlocked)
+    {
+        if (!GameNetworkManager.Instance.isHostingGame)
+        {
+            Logger.LogInfo(newUnlocked.ToString());
+        }
+    }
+
+    public int RegisterCustomLog(string modGUID, string logName, string text, bool unlocked=false, bool hidden=false)
+    {
+        CustomLogData newLog = new CustomLogData();
+        newLog.Keyword = logName.Split(" ")[0].ToLower();
+
+        if (UsedKeywords.Contains(newLog.Keyword))
+        {
+            CustomStoryLogs.Logger.LogError($"Unable to add story log [{logName}], keyword [{newLog.Keyword}] already in use!");
+            throw new Exception($"Unable to add story log [{modGUID}.{logName}], keyword [{newLog.Keyword}] already in use!");
+        }
+        UsedKeywords.Add(newLog.Keyword);
+        
+        newLog.LogName = logName;
+        newLog.LogText = text + "\n\n\n\n\n\n";
+        newLog.Unlocked = unlocked;
+        newLog.Hidden = hidden;
+        newLog.ModGUID = modGUID;
+
+        newLog.LogID = (modGUID + newLog.Keyword).GetHashCode();
+
+        RegisteredLogs[newLog.LogID] = newLog;
+
+        return newLog.LogID;
+    }
+
+    public void RegisterCustomLogCollectable(string modGUID, int logID, string planetName, Vector3 position, Vector3 rotation)
+    {
+        if (!RegisteredLogs.ContainsKey(logID))
+        {
+            Logger.LogError($"Custom log not found with ID {logID} for collectable added by {modGUID}");
+            return;
+        }
+        
+        CollectableData collectableData = new CollectableData();
+        collectableData.ModGUID = modGUID;
+        collectableData.LogID = logID;
+        collectableData.Position = position;
+        collectableData.Rotation = rotation;
+
+        if (!RegisteredCollectables.ContainsKey(planetName))
+        {
+            RegisteredCollectables[planetName] = new List<CollectableData>();
+        }
+
+        RegisteredCollectables[planetName].Add(collectableData);
+    }
+
+    private void ReceiveUnlockFromClient(int logID, ulong client)
+    {
+        CustomStoryLogs.Logger.LogInfo($"Log {logID} unlocked by {client}");
+        if (!RegisteredLogs.ContainsKey(logID))
+        {
+            return;
+        }
+        UnlockedNetVar.Value.Add(logID);
+        UnlockLogServer.SendAllClients(logID);
+    }
+
+    public static void UnlockStoryLogOnServer(int logID)
+    {
+        Instance.UnlockLogClient.SendServer(logID);
+    }
+
+    private void ReceiveUnlockMsgFromServer(int logID)
+    {
+        HUDManager.Instance.DisplayGlobalNotification("Found journal entry: '" + RegisteredLogs[logID].LogName);
+    }
+}
