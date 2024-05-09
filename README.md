@@ -39,6 +39,7 @@ This spawns the interactable on the Company moon just in front of the ship. Inte
 - Improve docs
 - Add logs from text/json files
 - Add custom log views, instead of having it all under `sigurd`
+- Ability to use custom model/game objects for the pickup
 
 ---
 

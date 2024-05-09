@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
@@ -104,6 +105,17 @@ public class CustomStoryLogs : BaseUnityPlugin
         ];
 
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} loaded!");
+        
+        AddTestLogs();
+    }
+
+    private void AddTestLogs()
+    {
+        RegisterCustomLog("test", "test", "ytest", unlocked:true);
+        RegisterCustomLog("test", "test one", "log testeraidaioja", unlocked:true);
+        RegisterCustomLog("test", "test one two", "asdads a asdfa a", unlocked:true);
+        RegisterCustomLog("test", "test two three - asjsjsd", "jkukjhkhkh a", unlocked:true);
+        RegisterCustomLog("test", "test two - five", "zcxzczcxcz", unlocked:true);
     }
 
     internal static void Patch()
@@ -120,7 +132,10 @@ public class CustomStoryLogs : BaseUnityPlugin
     public int RegisterCustomLog(string modGUID, string logName, string text, bool unlocked=false, bool hidden=false)
     {
         CustomLogData newLog = new CustomLogData();
-        newLog.Keyword = logName.Split(" ")[0].ToLower();
+        String[] split = logName.Trim().Split("-")[0].Trim().Split(" ");
+        newLog.Keyword = split[0].ToLower();
+        if (split.Length >= 2) newLog.Keyword += split[1];
+        if (split.Length >= 3) newLog.Keyword += split[2];
 
         if (UsedKeywords.Contains(newLog.Keyword))
         {
@@ -202,6 +217,7 @@ public class CustomStoryLogs : BaseUnityPlugin
             obj.GetComponent<CustomLogInteract>().storyLogID = collectableData.LogID;
             obj.name = objName;
             obj.transform.position = collectableData.Position;
+            obj.transform.rotation = Quaternion.Euler(collectableData.Rotation);
         }
     }
 
