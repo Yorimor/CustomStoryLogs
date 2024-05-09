@@ -1,34 +1,34 @@
-﻿using Unity.Netcode;
+﻿using System;
+using Unity.Netcode;
 using UnityEngine;
 namespace CustomStoryLogs;
 
-public class CustomLogInteract: MonoBehaviour
+public class CustomLogInteract: NetworkBehaviour
 {
     public int storyLogID = -1;
     private bool collected;
 
     public void CollectLog()
     {
-        if (NetworkManager.Singleton == null || GameNetworkManager.Instance == null || this.collected || this.storyLogID == -1)
+        if (NetworkManager.Singleton == null || GameNetworkManager.Instance == null || this.collected || storyLogID == -1)
             return;
-        
-        this.collected = true;
-        this.RemoveLogCollectible();
 
-        if (CustomStoryLogs.UnlockedNetVar.Value.Contains(this.storyLogID))
-        {
-            CustomStoryLogs.Logger.LogError($"Tried to unlock custom log {this.storyLogID} which has not been added!");
-            return;
-        }
+        if (CustomStoryLogs.UnlockedNetVar.Value.Contains(this.storyLogID)) return;
 
         CustomStoryLogs.UnlockStoryLogOnServer(storyLogID);
     }
 
+    public void LocalCollectLog()
+    {
+        this.collected = true;
+        this.RemoveLogCollectible();
+    }
+
     private void Start()
     {
-        if (!CustomStoryLogs.UnlockedNetVar.Value.Contains(this.storyLogID))
-            return;
-        this.RemoveLogCollectible();
+        name = "CustomStoryLog." + storyLogID.ToString();
+        if (CustomStoryLogs.UnlockedNetVar.Value.Contains(this.storyLogID))
+            this.RemoveLogCollectible();
     }
 
     private void RemoveLogCollectible()

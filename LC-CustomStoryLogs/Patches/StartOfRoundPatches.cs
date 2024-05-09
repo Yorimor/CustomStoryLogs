@@ -1,4 +1,6 @@
-﻿using HarmonyLib;
+﻿using System.Linq;
+using HarmonyLib;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace CustomStoryLogs.Patches;
@@ -11,17 +13,22 @@ public class StartOfRoundPatches
     private static void AddInLevelStoryLogs(StartOfRound __instance)
     {
         string planetName = __instance.currentLevel.PlanetName;
-        CustomStoryLogs.Logger.LogInfo(planetName);
+
+        if (CustomStoryLogs.RegisteredCollectables.ContainsKey(planetName) && __instance.IsHost)
+        {
+            CustomStoryLogs.SpawnLogsServer.SendAllClients(planetName);
+        }
+    }
+
+    [HarmonyPatch("ShipLeave")]
+    [HarmonyPostfix]
+    private static void CleanupLevel(StartOfRound __instance)
+    {
+        string planetName = __instance.currentLevel.PlanetName;
 
         if (CustomStoryLogs.RegisteredCollectables.ContainsKey(planetName))
         {
-            CustomStoryLogs.Logger.LogInfo(CustomStoryLogs.RegisteredCollectables[planetName]);
-            foreach (CollectableData collectableData in CustomStoryLogs.RegisteredCollectables[planetName])
-            {
-                CustomStoryLogs.Logger.LogInfo(collectableData.LogID);
-                GameObject obj = GameObject.Instantiate(CustomStoryLogs.CustomLogObj);
-                obj.transform.position = collectableData.Position;
-            }
+            CustomStoryLogs.DespawnLogsLocally(planetName);
         }
     }
 }

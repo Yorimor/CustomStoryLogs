@@ -5,9 +5,10 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using LethalLib.Modules;
 using LethalNetworkAPI;
+using Unity.Netcode;
 using UnityEngine;
+using NetworkPrefabs = LethalLib.Modules.NetworkPrefabs;
 
 namespace CustomStoryLogs;
 
@@ -22,7 +23,7 @@ public struct CustomLogData
     public string Keyword;
 }
 
-public struct CollectableData
+public struct CustomCollectableData
 {
     public string ModGUID;
     public Vector3 Position;
@@ -43,12 +44,15 @@ public class CustomStoryLogs : BaseUnityPlugin
     
     public static Dictionary<int, CustomLogData> RegisteredLogs = new Dictionary<int, CustomLogData>();
 
-    public static Dictionary<string, List<CollectableData>> RegisteredCollectables =
-        new Dictionary<string, List<CollectableData>>();
+    public static Dictionary<string, List<CustomCollectableData>> RegisteredCollectables =
+        new Dictionary<string, List<CustomCollectableData>>();
     
     public static string UnlockedSaveKey = $"{LethalNetworkAPI.MyPluginInfo.PLUGIN_GUID}-Unlocked";
 
     public static LethalNetworkVariable<List<int>> UnlockedNetVar = new LethalNetworkVariable<List<int>>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-Unlocked");
+    
+    public static LethalServerMessage<string> SpawnLogsServer = new LethalServerMessage<string>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-SpawnLogs");
+    LethalClientMessage<string> SpawnLogsClient = new LethalClientMessage<string>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-SpawnLogs");
     
     LethalServerMessage<int> UnlockLogServer = new LethalServerMessage<int>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-UnlockLog");
     LethalClientMessage<int> UnlockLogClient = new LethalClientMessage<int>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-UnlockLog");
@@ -68,11 +72,14 @@ public class CustomStoryLogs : BaseUnityPlugin
             return;
         }
         
+        // https://elbolilloduro.itch.io/exploration-objects
         CustomLogObj = MyAssets.LoadAsset<GameObject>("Assets/Yorimor/CustomStoryLogs/CustomStoryModel.prefab");
         NetworkPrefabs.RegisterNetworkPrefab(CustomLogObj);
 
         UnlockedNetVar.Value = new List<int>();
         UnlockedNetVar.OnValueChanged += UnlockedUpdate;
+
+        SpawnLogsClient.OnReceived += SpawnLogsLocally;
 
         UnlockLogServer.OnReceived += ReceiveUnlockFromClient;
         UnlockLogClient.OnReceived += ReceiveUnlockMsgFromServer;
@@ -98,11 +105,13 @@ public class CustomStoryLogs : BaseUnityPlugin
             "disco", "tulip"
         ];
 
-        RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "test log", "test\nunlocked\nnot hidden", true, false);
-        int zurokLog = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "zurok log", "test\nzurok\nnot unlocked\nnot hidden", false, false);
-        RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "hidden log", "test\nhidden\nunlocked", true, true);
+        int log1ID = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "test log", "test\nunlocked\nnot hidden");
+        int zurokLog = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "ztest log", "test\nzurok\nnot unlocked\nnot hidden");
+        int log2ID = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "hidden log", "test\nhidden\nunlocked");
         
         RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, zurokLog, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero);
+        RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, log1ID, "71 Gordion", new Vector3(-28,-2,-20), Vector3.zero);
+        RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, log2ID, "71 Gordion", new Vector3(-28,-2,-10), Vector3.zero);
         
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} loaded!");
     }
@@ -159,7 +168,7 @@ public class CustomStoryLogs : BaseUnityPlugin
             return;
         }
         
-        CollectableData collectableData = new CollectableData();
+        CustomCollectableData collectableData = new CustomCollectableData();
         collectableData.ModGUID = modGUID;
         collectableData.LogID = logID;
         collectableData.Position = position;
@@ -167,7 +176,7 @@ public class CustomStoryLogs : BaseUnityPlugin
 
         if (!RegisteredCollectables.ContainsKey(planetName))
         {
-            RegisteredCollectables[planetName] = new List<CollectableData>();
+            RegisteredCollectables[planetName] = new List<CustomCollectableData>();
         }
 
         RegisteredCollectables[planetName].Add(collectableData);
@@ -175,11 +184,12 @@ public class CustomStoryLogs : BaseUnityPlugin
 
     private void ReceiveUnlockFromClient(int logID, ulong client)
     {
-        CustomStoryLogs.Logger.LogInfo($"Log {logID} unlocked by {client}");
         if (!RegisteredLogs.ContainsKey(logID))
         {
+            CustomStoryLogs.Logger.LogError($"Log {logID} unlocked by {client} but it does not exist!");
             return;
         }
+        CustomStoryLogs.Logger.LogInfo($"Log {logID} unlocked by {client}");
         UnlockedNetVar.Value.Add(logID);
         UnlockLogServer.SendAllClients(logID);
     }
@@ -191,6 +201,40 @@ public class CustomStoryLogs : BaseUnityPlugin
 
     private void ReceiveUnlockMsgFromServer(int logID)
     {
-        HUDManager.Instance.DisplayGlobalNotification("Found journal entry: '" + RegisteredLogs[logID].LogName);
+        HUDManager.Instance.DisplayGlobalNotification($"Found journal entry: '{RegisteredLogs[logID].LogName}'");
+        GameObject.Find("CustomStoryLog." + logID.ToString())?.GetComponent<CustomLogInteract>().LocalCollectLog();
+    }
+
+    private void SpawnLogsLocally(string planetName)
+    {
+        CustomStoryLogs.Logger.LogInfo($"Loading logs for: {planetName}");
+        foreach (CustomCollectableData collectableData in CustomStoryLogs.RegisteredCollectables[planetName])
+        {   
+            string objName = "CustomStoryLog." + collectableData.LogID.ToString();
+            
+            if (GameObject.Find(objName)) continue;
+            
+            CustomStoryLogs.Logger.LogInfo($"Spawning collectable log {collectableData.LogID}");
+            GameObject obj = CustomStoryLogs.Instantiate(CustomStoryLogs.CustomLogObj);
+                
+            obj.GetComponent<CustomLogInteract>().storyLogID = collectableData.LogID;
+            obj.name = objName;
+            obj.transform.position = collectableData.Position;
+        }
+    }
+
+    public static void DespawnLogsLocally(string planetName)
+    {
+        CustomStoryLogs.Logger.LogInfo($"Removing logs for: {planetName}");
+        foreach (CustomCollectableData collectableData in CustomStoryLogs.RegisteredCollectables[planetName])
+        {   
+            string objName = "CustomStoryLog." + collectableData.LogID.ToString();
+            
+            GameObject obj = GameObject.Find(objName);
+            if (obj)
+            {
+                Destroy(obj);
+            }
+        }
     }
 }

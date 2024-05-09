@@ -93,9 +93,12 @@ public class TerminalPatches
         if (node.name.Contains("LogsHub"))
         {
             StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append("\n");
             
             foreach (int logID in CustomStoryLogs.UnlockedNetVar.Value)
             {
+                if (!CustomStoryLogs.RegisteredLogs.ContainsKey(logID)) continue;
+
                 CustomLogData log = CustomStoryLogs.RegisteredLogs[logID];
                 if (!log.Hidden)
                 {
@@ -104,6 +107,8 @@ public class TerminalPatches
             }
             
             stringBuilder.Append("\n\n\n\n");
+
+            __result = __result.Replace("[currentUnlockedLogsList]", "");
             __result = __result.TrimEnd() + stringBuilder.ToString();
         }
     }
