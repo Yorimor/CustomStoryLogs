@@ -77,10 +77,8 @@ public class CustomStoryLogs : BaseUnityPlugin
         NetworkPrefabs.RegisterNetworkPrefab(CustomLogObj);
 
         UnlockedNetVar.Value = new List<int>();
-        UnlockedNetVar.OnValueChanged += UnlockedUpdate;
 
         SpawnLogsClient.OnReceived += SpawnLogsLocally;
-
         UnlockLogServer.OnReceived += ReceiveUnlockFromClient;
         UnlockLogClient.OnReceived += ReceiveUnlockMsgFromServer;
 
@@ -105,14 +103,6 @@ public class CustomStoryLogs : BaseUnityPlugin
             "disco", "tulip"
         ];
 
-        int log1ID = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "test log", "test\nunlocked\nnot hidden");
-        int zurokLog = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "ztest log", "test\nzurok\nnot unlocked\nnot hidden");
-        int log2ID = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "hidden log", "test\nhidden\nunlocked");
-        
-        RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, zurokLog, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero);
-        RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, log1ID, "71 Gordion", new Vector3(-28,-2,-20), Vector3.zero);
-        RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, log2ID, "71 Gordion", new Vector3(-28,-2,-10), Vector3.zero);
-        
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} loaded!");
     }
 
@@ -125,14 +115,6 @@ public class CustomStoryLogs : BaseUnityPlugin
     internal static void Unpatch()
     {
         Harmony?.UnpatchSelf();
-    }
-
-    public void UnlockedUpdate(List<int> newUnlocked)
-    {
-        if (!GameNetworkManager.Instance.isHostingGame)
-        {
-            Logger.LogInfo(newUnlocked.ToString());
-        }
     }
 
     public int RegisterCustomLog(string modGUID, string logName, string text, bool unlocked=false, bool hidden=false)
