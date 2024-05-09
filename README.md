@@ -6,7 +6,7 @@ A Mod Library for use with Lethal Company.
 
 Allows you to add custom story logs to the terminal, and in world interactables to unlock them.
 
-This is my first mod intended for use by other people as a library, so the code is inconsistent and messy. I have done some simple testing by myself locally, so should fine.
+This is my first mod intended for use by other people as a library, so the code is inconsistent and messy. Any feed back and help is very welcome!
 
 ---
 
