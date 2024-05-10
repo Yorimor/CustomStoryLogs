@@ -13,7 +13,7 @@ This is my first mod intended for use by other people as a library, so the code 
 Add a story log:
 ```csharp
 // public int RegisterCustomLog(string modGUID, string logName, string text, bool unlocked=false, bool hidden=false)
-int myLogID = CustomStoryLogs.RegisterCustomLog(YOUR_MOD_GUID, "Log Name - May 09", "test\nunlocked\nnot hidden");
+int myLogID = CustomStoryLogs.CustomStoryLogs.RegisterCustomLog(YOUR_MOD_GUID, "Log Name - May 09", "test\nunlocked\nnot hidden");
 ```
 
 The function returns an integer which is used to uniquely identify the new log. It is created from a hash of your mods GUID and the first word in the log name.
@@ -27,7 +27,7 @@ You can also define if the log is already unlocked or hidden the terminal list.
 Add an interactable:
 ```csharp
 // public void RegisterCustomLogCollectable(string modGUID, int logID, string planetName, Vector3 position, Vector3 rotation)
-CustomStoryLogs.RegisterCustomLogCollectable(YOUR_MOD_GUID, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero);
+CustomStoryLogs.CustomStoryLogs.RegisterCustomLogCollectable(YOUR_MOD_GUID, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero);
 ```
 
 This spawns the interactable on the Company moon just in front of the ship. Interactable objects are removed when leaving the moon.

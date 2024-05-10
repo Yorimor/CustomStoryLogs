@@ -53,10 +53,10 @@ public class CustomStoryLogs : BaseUnityPlugin
     public static LethalNetworkVariable<List<int>> UnlockedNetVar = new LethalNetworkVariable<List<int>>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-Unlocked");
     
     public static LethalServerMessage<string> SpawnLogsServer = new LethalServerMessage<string>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-SpawnLogs");
-    LethalClientMessage<string> SpawnLogsClient = new LethalClientMessage<string>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-SpawnLogs");
+    public static LethalClientMessage<string> SpawnLogsClient = new LethalClientMessage<string>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-SpawnLogs");
     
-    LethalServerMessage<int> UnlockLogServer = new LethalServerMessage<int>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-UnlockLog");
-    LethalClientMessage<int> UnlockLogClient = new LethalClientMessage<int>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-UnlockLog");
+    public static LethalServerMessage<int> UnlockLogServer = new LethalServerMessage<int>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-UnlockLog");
+    public static LethalClientMessage<int> UnlockLogClient = new LethalClientMessage<int>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-UnlockLog");
     
     public static AssetBundle MyAssets;
     public static GameObject CustomLogObj;
@@ -106,10 +106,10 @@ public class CustomStoryLogs : BaseUnityPlugin
 
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} loaded!");
         
-        AddTestLogs();
+        // AddTestLogs();
     }
 
-    private void AddTestLogs()
+    private static void AddTestLogs()
     {
         RegisterCustomLog("test", "test", "ytest", unlocked:true);
         RegisterCustomLog("test", "test one", "log testeraidaioja", unlocked:true);
@@ -129,7 +129,7 @@ public class CustomStoryLogs : BaseUnityPlugin
         Harmony?.UnpatchSelf();
     }
 
-    public int RegisterCustomLog(string modGUID, string logName, string text, bool unlocked=false, bool hidden=false)
+    public static int RegisterCustomLog(string modGUID, string logName, string text, bool unlocked=false, bool hidden=false)
     {
         CustomLogData newLog = new CustomLogData();
         String[] split = logName.Trim().Split("-")[0].Trim().Split(" ");
@@ -157,7 +157,7 @@ public class CustomStoryLogs : BaseUnityPlugin
         return newLog.LogID;
     }
 
-    public void RegisterCustomLogCollectable(string modGUID, int logID, string planetName, Vector3 position, Vector3 rotation)
+    public static void RegisterCustomLogCollectable(string modGUID, int logID, string planetName, Vector3 position, Vector3 rotation)
     {
         if (!RegisteredLogs.ContainsKey(logID))
         {
@@ -179,7 +179,7 @@ public class CustomStoryLogs : BaseUnityPlugin
         RegisteredCollectables[planetName].Add(collectableData);
     }
 
-    private void ReceiveUnlockFromClient(int logID, ulong client)
+    private static void ReceiveUnlockFromClient(int logID, ulong client)
     {
         if (!RegisteredLogs.ContainsKey(logID))
         {
@@ -193,16 +193,16 @@ public class CustomStoryLogs : BaseUnityPlugin
 
     public static void UnlockStoryLogOnServer(int logID)
     {
-        Instance.UnlockLogClient.SendServer(logID);
+        UnlockLogClient.SendServer(logID);
     }
 
-    private void ReceiveUnlockMsgFromServer(int logID)
+    private static void ReceiveUnlockMsgFromServer(int logID)
     {
         HUDManager.Instance.DisplayGlobalNotification($"Found journal entry: '{RegisteredLogs[logID].LogName}'");
         GameObject.Find("CustomStoryLog." + logID.ToString())?.GetComponent<CustomLogInteract>().LocalCollectLog();
     }
 
-    private void SpawnLogsLocally(string planetName)
+    private static void SpawnLogsLocally(string planetName)
     {
         CustomStoryLogs.Logger.LogInfo($"Loading logs for: {planetName}");
         foreach (CustomCollectableData collectableData in CustomStoryLogs.RegisteredCollectables[planetName])

@@ -24,7 +24,7 @@ public class TerminalPatches
         TerminalKeyword view = null;
         foreach (TerminalKeyword keyword in __instance.terminalNodes.allKeywords)
         {
-            // CustomStoryLogs.Logger.LogInfo(keyword.word);
+            // Plugin.Logger.LogInfo(keyword.word);
             if (keyword.word == "view")
             {
                 view = keyword;
