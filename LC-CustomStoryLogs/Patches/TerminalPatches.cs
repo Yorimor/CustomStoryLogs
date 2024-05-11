@@ -16,9 +16,11 @@ public class TerminalPatches
         if (__instance.IsServer)
         {
             CustomStoryLogs.Logger.LogInfo("Loading unlocked logs");
-            CustomStoryLogs.UnlockedNetVar.Value = ES3.Load<List<int>>(CustomStoryLogs.UnlockedSaveKey,
+            CustomStoryLogs.UnlockedNetwork.Value = ES3.Load<List<int>>(CustomStoryLogs.UnlockedSaveKey,
                 GameNetworkManager.Instance.currentSaveFileName, new List<int>());
         }
+
+        CustomStoryLogs.UnlockedLocal = CustomStoryLogs.UnlockedNetwork.Value;
 
         CustomStoryLogs.Logger.LogInfo("Adding logs");
         TerminalKeyword view = null;
@@ -47,9 +49,10 @@ public class TerminalPatches
             logNoun1.result = newNode;
             logNoun1.noun = newKeyword;
 
-            if (data.Unlocked && !CustomStoryLogs.UnlockedNetVar.Value.Contains(data.LogID))
+            if (data.Unlocked && !CustomStoryLogs.GetUnlockedList().Contains(data.LogID))
             {
-                CustomStoryLogs.UnlockedNetVar.Value.Add(data.LogID);
+                CustomStoryLogs.UnlockedNetwork.Value.Add(data.LogID);
+                CustomStoryLogs.UnlockedLocal.Add(data.LogID);
             }
         
             view.compatibleNouns = view.compatibleNouns.Append(logNoun1).ToArray();
@@ -95,7 +98,7 @@ public class TerminalPatches
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Append("\n");
             
-            foreach (int logID in CustomStoryLogs.UnlockedNetVar.Value)
+            foreach (int logID in CustomStoryLogs.GetUnlockedList())
             {
                 if (!CustomStoryLogs.RegisteredLogs.ContainsKey(logID)) continue;
 
@@ -118,7 +121,7 @@ public class TerminalPatches
     private static void LoadCustomLog(Terminal __instance, TerminalNode node)
     {
         int logID = node.storyLogFileID;
-        if (CustomStoryLogs.RegisteredLogs.ContainsKey(logID) && CustomStoryLogs.UnlockedNetVar.Value.Contains(logID))
+        if (CustomStoryLogs.RegisteredLogs.ContainsKey(logID) && CustomStoryLogs.GetUnlockedList().Contains(logID))
         {
             __instance.LoadNewNode(node);
         }

@@ -7,7 +7,6 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using LethalNetworkAPI;
-using Unity.Netcode;
 using UnityEngine;
 using NetworkPrefabs = LethalLib.Modules.NetworkPrefabs;
 
@@ -50,13 +49,14 @@ public class CustomStoryLogs : BaseUnityPlugin
     
     public static string UnlockedSaveKey = $"{LethalNetworkAPI.MyPluginInfo.PLUGIN_GUID}-Unlocked";
 
-    public static LethalNetworkVariable<List<int>> UnlockedNetVar = new LethalNetworkVariable<List<int>>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-Unlocked");
+    public static LethalNetworkVariable<List<int>> UnlockedNetwork = new LethalNetworkVariable<List<int>>(identifier: "UnlockedList");
+    public static List<int> UnlockedLocal = new List<int>();
     
-    public static LethalServerMessage<string> SpawnLogsServer = new LethalServerMessage<string>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-SpawnLogs");
-    public static LethalClientMessage<string> SpawnLogsClient = new LethalClientMessage<string>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-SpawnLogs");
+    public static LethalServerMessage<string> SpawnLogsServer = new LethalServerMessage<string>(identifier: "SpawnLogs");
+    public static LethalClientMessage<string> SpawnLogsClient = new LethalClientMessage<string>(identifier: "SpawnLogs");
     
-    public static LethalServerMessage<int> UnlockLogServer = new LethalServerMessage<int>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-UnlockLog");
-    public static LethalClientMessage<int> UnlockLogClient = new LethalClientMessage<int>(identifier: $"{MyPluginInfo.PLUGIN_GUID}-UnlockLog");
+    public static LethalServerMessage<int> UnlockLogServer = new LethalServerMessage<int>(identifier: "UnlockLog");
+    public static LethalClientMessage<int> UnlockLogClient = new LethalClientMessage<int>(identifier: "UnlockLog");
     
     public static AssetBundle MyAssets;
     public static GameObject CustomLogObj;
@@ -77,7 +77,7 @@ public class CustomStoryLogs : BaseUnityPlugin
         CustomLogObj = MyAssets.LoadAsset<GameObject>("Assets/Yorimor/CustomStoryLogs/CustomStoryModel.prefab");
         NetworkPrefabs.RegisterNetworkPrefab(CustomLogObj);
 
-        UnlockedNetVar.Value = new List<int>();
+        UnlockedNetwork.Value = new List<int>();
 
         SpawnLogsClient.OnReceived += SpawnLogsLocally;
         UnlockLogServer.OnReceived += ReceiveUnlockFromClient;
@@ -134,13 +134,13 @@ public class CustomStoryLogs : BaseUnityPlugin
         CustomLogData newLog = new CustomLogData();
         String[] split = logName.Trim().Split("-")[0].Trim().Split(" ");
         newLog.Keyword = split[0].ToLower();
-        if (split.Length >= 2) newLog.Keyword += split[1];
-        if (split.Length >= 3) newLog.Keyword += split[2];
+        // if (split.Length >= 2) newLog.Keyword += split[1];
+        // if (split.Length >= 3) newLog.Keyword += split[2];
 
         if (UsedKeywords.Contains(newLog.Keyword))
         {
             CustomStoryLogs.Logger.LogError($"Unable to add story log [{logName}], keyword [{newLog.Keyword}] already in use!");
-            throw new Exception($"Unable to add story log [{modGUID}.{logName}], keyword [{newLog.Keyword}] already in use!");
+            return -1;
         }
         UsedKeywords.Add(newLog.Keyword);
         
@@ -187,8 +187,13 @@ public class CustomStoryLogs : BaseUnityPlugin
             return;
         }
         CustomStoryLogs.Logger.LogInfo($"Log {logID} unlocked by {client}");
-        UnlockedNetVar.Value.Add(logID);
+        UnlockedNetwork.Value.Add(logID);
         UnlockLogServer.SendAllClients(logID);
+    }
+
+    public static List<int> GetUnlockedList()
+    {
+        return UnlockedNetwork.Value.Union(UnlockedLocal).ToList();
     }
 
     public static void UnlockStoryLogOnServer(int logID)
@@ -200,6 +205,7 @@ public class CustomStoryLogs : BaseUnityPlugin
     {
         HUDManager.Instance.DisplayGlobalNotification($"Found journal entry: '{RegisteredLogs[logID].LogName}'");
         GameObject.Find("CustomStoryLog." + logID.ToString())?.GetComponent<CustomLogInteract>().LocalCollectLog();
+        UnlockedLocal.Add(logID);
     }
 
     private static void SpawnLogsLocally(string planetName)

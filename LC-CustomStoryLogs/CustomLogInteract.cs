@@ -1,6 +1,6 @@
-﻿using System;
-using Unity.Netcode;
+﻿using Unity.Netcode;
 using UnityEngine;
+
 namespace CustomStoryLogs;
 
 public class CustomLogInteract: NetworkBehaviour
@@ -13,7 +13,7 @@ public class CustomLogInteract: NetworkBehaviour
         if (NetworkManager.Singleton == null || GameNetworkManager.Instance == null || this.collected || storyLogID == -1)
             return;
 
-        if (CustomStoryLogs.UnlockedNetVar.Value.Contains(this.storyLogID)) return;
+        if (CustomStoryLogs.GetUnlockedList().Contains(this.storyLogID)) return;
 
         CustomStoryLogs.UnlockStoryLogOnServer(storyLogID);
     }
@@ -27,7 +27,7 @@ public class CustomLogInteract: NetworkBehaviour
     private void Start()
     {
         name = "CustomStoryLog." + storyLogID.ToString();
-        if (CustomStoryLogs.UnlockedNetVar.Value.Contains(this.storyLogID))
+        if (CustomStoryLogs.GetUnlockedList().Contains(this.storyLogID))
             this.RemoveLogCollectible();
     }
 

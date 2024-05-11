@@ -16,7 +16,7 @@ public class GameNetPatches
 
         try
         {
-            ES3.Save(CustomStoryLogs.UnlockedSaveKey, CustomStoryLogs.UnlockedNetVar.Value, __instance.currentSaveFileName);
+            ES3.Save(CustomStoryLogs.UnlockedSaveKey, CustomStoryLogs.GetUnlockedList(), __instance.currentSaveFileName);
         }
         catch (Exception ex)
         {
