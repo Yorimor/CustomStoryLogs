@@ -188,6 +188,8 @@ public class CustomStoryLogs : BaseUnityPlugin
         }
         CustomStoryLogs.Logger.LogInfo($"Log {logID} unlocked by {client}");
         UnlockedNetwork.Value.Add(logID);
+        
+        CustomStoryLogs.Logger.LogDebug($"Telling clients to unlock log {logID}");
         UnlockLogServer.SendAllClients(logID);
     }
 
@@ -198,11 +200,13 @@ public class CustomStoryLogs : BaseUnityPlugin
 
     public static void UnlockStoryLogOnServer(int logID)
     {
+        CustomStoryLogs.Logger.LogDebug($"Telling server to unlock log {logID}");
         UnlockLogClient.SendServer(logID);
     }
 
     private static void ReceiveUnlockMsgFromServer(int logID)
     {
+        CustomStoryLogs.Logger.LogDebug($"Unlocking log {logID}");
         HUDManager.Instance.DisplayGlobalNotification($"Found journal entry: '{RegisteredLogs[logID].LogName}'");
         GameObject.Find("CustomStoryLog." + logID.ToString())?.GetComponent<CustomLogInteract>().LocalCollectLog();
         UnlockedLocal.Add(logID);
@@ -224,6 +228,8 @@ public class CustomStoryLogs : BaseUnityPlugin
             obj.name = objName;
             obj.transform.position = collectableData.Position;
             obj.transform.rotation = Quaternion.Euler(collectableData.Rotation);
+            
+            CustomStoryLogs.Logger.LogDebug($"Spawned log {objName} @ {obj.transform.position}");
         }
     }
 

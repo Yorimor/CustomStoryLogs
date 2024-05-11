@@ -97,7 +97,8 @@ public class TerminalPatches
         {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Append("\n");
-            
+
+            int count = 0;
             foreach (int logID in CustomStoryLogs.GetUnlockedList())
             {
                 if (!CustomStoryLogs.RegisteredLogs.ContainsKey(logID)) continue;
@@ -106,12 +107,18 @@ public class TerminalPatches
                 if (!log.Hidden)
                 {
                     stringBuilder.Append("\n" + log.LogName);
+                    count += 1;
                 }
             }
-            
+
             stringBuilder.Append("\n\n\n\n");
 
-            __result = __result.Replace("[currentUnlockedLogsList]", "");
+            if (count > 0)
+            {
+                __result = __result.Replace("[currentUnlockedLogsList]", "");
+                __result = __result.Replace("[ALL DATA HAS BEEN CORRUPTED OR OVERWRITTEN]", "");
+            }
+            
             __result = __result.TrimEnd() + stringBuilder.ToString();
         }
     }

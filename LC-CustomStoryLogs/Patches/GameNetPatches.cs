@@ -13,7 +13,9 @@ public class GameNetPatches
     private static void SaveUnlockedLogs(GameNetworkManager __instance)
     {
         if (!__instance.isHostingGame) return;
-
+        
+        
+        CustomStoryLogs.Logger.LogDebug("Saving Unlocked logs");
         try
         {
             ES3.Save(CustomStoryLogs.UnlockedSaveKey, CustomStoryLogs.GetUnlockedList(), __instance.currentSaveFileName);
