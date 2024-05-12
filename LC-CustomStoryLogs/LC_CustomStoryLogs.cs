@@ -104,6 +104,8 @@ public class CustomStoryLogs : BaseUnityPlugin
             "disco", "tulip"
         ];
 
+        JsonLogReader.LoadLogsFromUserFiles();
+
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} loaded!");
         
         // AddTestLogs();
@@ -112,10 +114,6 @@ public class CustomStoryLogs : BaseUnityPlugin
     private static void AddTestLogs()
     {
         RegisterCustomLog("test", "test", "ytest", unlocked:true);
-        RegisterCustomLog("test", "test one", "log testeraidaioja", unlocked:true);
-        RegisterCustomLog("test", "test one two", "asdads a asdfa a", unlocked:true);
-        RegisterCustomLog("test", "test two three - asjsjsd", "jkukjhkhkh a", unlocked:true);
-        RegisterCustomLog("test", "test two - five", "zcxzczcxcz", unlocked:true);
     }
 
     internal static void Patch()
