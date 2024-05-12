@@ -49,8 +49,6 @@ In the `logs` folder create a new .txt or .json file (name it anything you like)
 
 And that's it! My mod will automatically load the logs and place them in game for you!
 
-```
-
 ---
 
 ### Using the library through code
