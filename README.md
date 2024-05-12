@@ -8,7 +8,52 @@ Allows you to add custom story logs to the terminal, and in world interactables 
 
 This is my first mod intended for use by other people as a library, so the code is inconsistent and messy. Any feed back and help is very welcome!
 
+Logs can be added with code, or through a text/json file created with my [Log Builder](https://yorimor.github.io/CustomStoryLogsJsonBuilder/) tool!
+
 ---
+
+### Using the Log Builder
+
+Fill out all the box in the [Log Builder](https://yorimor.github.io/CustomStoryLogsJsonBuilder/), add as many logs as you need.
+
+Once you have everything filled out, click export to generate the json data (it will give you something similar to the below example), and then click copy text.
+
+```json
+{
+    "username": "Yorimor",
+    "modname": "ExampleLog",
+    "version": "1.2.3",
+    "logs": {
+        "0": {
+            "name": "Example - May 12",
+            "text": "This is an example log, created with the log builder!\n\n:D",
+            "moon": "71 Gordion",
+            "position": {
+                "X": "-28",
+                "Y": "-2",
+                "Z": "-15"
+            },
+            "rotation": {
+                "X": "0",
+                "Y": "0",
+                "Z": "0"
+            }
+        }
+    }
+}
+```
+
+In your own mods files create the following folders `BepInEx/plugins/CustomStoryLogs/logs/`
+
+In the `logs` folder create a new .txt or .json file (name it anything you like) and paste the json data into the file and save it.
+
+And that's it! My mod will automatically load the logs and place them in game for you!
+
+```
+
+---
+
+### Using the library through code
 
 Add a story log:
 ```csharp
@@ -37,14 +82,16 @@ This spawns the interactable on the Company moon just in front of the ship. Inte
 ### Planned Features
 
 - Improve docs
-- Add logs from text/json files
 - Add custom log views, instead of having it all under `sigurd`
 - Ability to use custom model/game objects for the pickup
+
+- Add logs from text/json files (Done!)
 
 ---
 
 ### Credits
 
+- Noah E. for helping so much in creating the Log Builder
 - Xilophor's LethalNetworkAPI and Project Template
 - Evaisa's LethaLib
 - Model used: https://elbolilloduro.itch.io/exploration-objects
