@@ -14,7 +14,7 @@ public class RoundManagerPatches
 
         if (CustomStoryLogs.RegisteredCollectables.ContainsKey(planetName) && __instance.IsHost)
         {
-            CustomStoryLogs.Logger.LogDebug("Telling clients to despawn log objects");
+            CustomStoryLogs.Logger.LogDebug("Telling clients to spawn log objects");
             CustomStoryLogs.SpawnLogsServer.SendAllClients(planetName);
         }
     }

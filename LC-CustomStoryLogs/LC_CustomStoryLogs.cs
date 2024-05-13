@@ -29,6 +29,7 @@ public struct CustomCollectableData
     public Vector3 Position;
     public Vector3 Rotation;
     public int LogID;
+    public int ModelID;
 }
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
@@ -60,6 +61,8 @@ public class CustomStoryLogs : BaseUnityPlugin
     
     public static AssetBundle MyAssets;
     public static GameObject CustomLogObj;
+
+    public static List<GameObject> CustomModels = new List<GameObject>();
     
     private void Awake()
     {
@@ -108,12 +111,14 @@ public class CustomStoryLogs : BaseUnityPlugin
 
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} loaded!");
         
-        // AddTestLogs();
+        AddTestLogs();
     }
 
     private static void AddTestLogs()
     {
-        RegisterCustomLog("test", "test", "ytest", unlocked:true);
+        int modelID = RegisterCustomLogModel(MyAssets.LoadAsset<GameObject>("Assets/Yorimor/CustomStoryLogs/Cube.prefab"));
+        int logID = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "Model - Test", "Model Test\n\n/\\\\/");
+        RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, logID, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero, modelID);
     }
 
     internal static void Patch()
@@ -155,7 +160,7 @@ public class CustomStoryLogs : BaseUnityPlugin
         return newLog.LogID;
     }
 
-    public static void RegisterCustomLogCollectable(string modGUID, int logID, string planetName, Vector3 position, Vector3 rotation)
+    public static void RegisterCustomLogCollectable(string modGUID, int logID, string planetName, Vector3 position, Vector3 rotation, int modelID=0)
     {
         if (!RegisteredLogs.ContainsKey(logID))
         {
@@ -169,12 +174,29 @@ public class CustomStoryLogs : BaseUnityPlugin
         collectableData.Position = position;
         collectableData.Rotation = rotation;
 
+        if (modelID > CustomModels.Count || modelID < 0)
+        {
+            Logger.LogError($"[{modGUID}/{logID}] Custom ModelID {modelID} invalid! Setting to default/zero.");
+            modelID = 0;
+        }
+        
+        collectableData.ModelID = modelID;
+
         if (!RegisteredCollectables.ContainsKey(planetName))
         {
             RegisteredCollectables[planetName] = new List<CustomCollectableData>();
         }
 
         RegisteredCollectables[planetName].Add(collectableData);
+    }
+
+    public static int RegisterCustomLogModel(GameObject customModel)
+    {
+        CustomModels.Add(customModel);
+        int modelID = CustomModels.Count;
+        
+        CustomStoryLogs.Logger.LogInfo($"Added model {customModel.name} with ID {modelID}");
+        return modelID;
     }
 
     private static void ReceiveUnlockFromClient(int logID, ulong client)
@@ -220,8 +242,23 @@ public class CustomStoryLogs : BaseUnityPlugin
             if (GameObject.Find(objName)) continue;
             
             CustomStoryLogs.Logger.LogInfo($"Spawning collectable log {collectableData.LogID}");
-            GameObject obj = CustomStoryLogs.Instantiate(CustomStoryLogs.CustomLogObj);
-                
+            GameObject obj = CustomStoryLogs.Instantiate(CustomLogObj);
+            
+            if (collectableData.ModelID > 0)
+            {
+                GameObject model = CustomStoryLogs.Instantiate(CustomModels[collectableData.ModelID - 1], obj.transform);
+                obj.GetComponent<MeshRenderer>().enabled = false;
+
+                BoxCollider oldBox = obj.GetComponent<BoxCollider>();
+                BoxCollider newBox = model.GetComponent<BoxCollider>();
+                if (newBox)
+                {
+                    newBox.enabled = false;
+                    oldBox.size = newBox.size;
+                    oldBox.center = newBox.center;
+                }
+            }
+            
             obj.GetComponent<CustomLogInteract>().storyLogID = collectableData.LogID;
             obj.name = objName;
             obj.transform.position = collectableData.Position;
