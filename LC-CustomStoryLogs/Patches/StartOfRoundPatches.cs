@@ -12,7 +12,7 @@ public class StartOfRoundPatches
     {
         string planetName = __instance.currentLevel.PlanetName;
 
-        if (CustomStoryLogs.RegisteredCollectables.ContainsKey(planetName))
+        if (CustomStoryLogs.PlanetCollectables.ContainsKey(planetName))
         {
             CustomStoryLogs.DespawnLogsLocally(planetName);
         }

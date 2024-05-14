@@ -12,7 +12,7 @@ public class RoundManagerPatches
     {
         string planetName = newLevel.PlanetName;
 
-        if (CustomStoryLogs.RegisteredCollectables.ContainsKey(planetName) && __instance.IsHost)
+        if (CustomStoryLogs.PlanetCollectables.ContainsKey(planetName) && __instance.IsHost)
         {
             CustomStoryLogs.Logger.LogDebug("Telling clients to spawn log objects");
             CustomStoryLogs.SpawnLogsServer.SendAllClients(planetName);

@@ -23,14 +23,17 @@ public struct CustomLogData
     public string Keyword;
 }
 
-public struct CustomCollectableData
+public struct LogCollectableData
 {
     public string ModGUID;
     public Vector3 Position;
     public Vector3 Rotation;
     public int LogID;
     public int ModelID;
+    public LogCollected Event;
 }
+
+public delegate void LogCollected();
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 [BepInDependency(LethalLib.Plugin.ModGUID)]
@@ -45,8 +48,8 @@ public class CustomStoryLogs : BaseUnityPlugin
     
     public static Dictionary<int, CustomLogData> RegisteredLogs = new Dictionary<int, CustomLogData>();
 
-    public static Dictionary<string, List<CustomCollectableData>> RegisteredCollectables =
-        new Dictionary<string, List<CustomCollectableData>>();
+    public static Dictionary<string, List<int>> PlanetCollectables = new Dictionary<string, List<int>>();
+    public static Dictionary<int, LogCollectableData> Collectables = new Dictionary<int, LogCollectableData>();
     
     public static string UnlockedSaveKey = $"{LethalNetworkAPI.MyPluginInfo.PLUGIN_GUID}-Unlocked";
 
@@ -58,6 +61,7 @@ public class CustomStoryLogs : BaseUnityPlugin
     
     public static LethalServerMessage<int> UnlockLogServer = new LethalServerMessage<int>(identifier: "UnlockLog");
     public static LethalClientMessage<int> UnlockLogClient = new LethalClientMessage<int>(identifier: "UnlockLog");
+
     
     public static AssetBundle MyAssets;
     public static GameObject CustomLogObj;
@@ -111,7 +115,7 @@ public class CustomStoryLogs : BaseUnityPlugin
 
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} loaded!");
         
-        AddTestLogs();
+        // AddTestLogs();
     }
 
     private static void AddTestLogs()
@@ -119,6 +123,11 @@ public class CustomStoryLogs : BaseUnityPlugin
         int modelID = RegisterCustomLogModel(MyAssets.LoadAsset<GameObject>("Assets/Yorimor/CustomStoryLogs/Cube.prefab"));
         int logID = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "Model - Test", "Model Test\n\n/\\\\/");
         RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, logID, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero, modelID);
+    }
+
+    private static void TestEvent()
+    {
+        Logger.LogInfo("TEST EVENT");
     }
 
     internal static void Patch()
@@ -137,8 +146,6 @@ public class CustomStoryLogs : BaseUnityPlugin
         CustomLogData newLog = new CustomLogData();
         String[] split = logName.Trim().Split("-")[0].Trim().Split(" ");
         newLog.Keyword = split[0].ToLower();
-        // if (split.Length >= 2) newLog.Keyword += split[1];
-        // if (split.Length >= 3) newLog.Keyword += split[2];
 
         if (UsedKeywords.Contains(newLog.Keyword))
         {
@@ -162,13 +169,13 @@ public class CustomStoryLogs : BaseUnityPlugin
 
     public static void RegisterCustomLogCollectable(string modGUID, int logID, string planetName, Vector3 position, Vector3 rotation, int modelID=0)
     {
+        LogCollectableData collectableData = new LogCollectableData();
         if (!RegisteredLogs.ContainsKey(logID))
         {
             Logger.LogError($"Custom log not found with ID {logID} for collectable added by {modGUID}");
             return;
         }
         
-        CustomCollectableData collectableData = new CustomCollectableData();
         collectableData.ModGUID = modGUID;
         collectableData.LogID = logID;
         collectableData.Position = position;
@@ -182,12 +189,15 @@ public class CustomStoryLogs : BaseUnityPlugin
         
         collectableData.ModelID = modelID;
 
-        if (!RegisteredCollectables.ContainsKey(planetName))
+        if (!PlanetCollectables.ContainsKey(planetName))
         {
-            RegisteredCollectables[planetName] = new List<CustomCollectableData>();
+            PlanetCollectables[planetName] = new List<int>();
         }
 
-        RegisteredCollectables[planetName].Add(collectableData);
+        Collectables[collectableData.LogID] = collectableData;
+        PlanetCollectables[planetName].Add(collectableData.LogID);
+        
+        return;
     }
 
     public static int RegisterCustomLogModel(GameObject customModel)
@@ -235,8 +245,10 @@ public class CustomStoryLogs : BaseUnityPlugin
     private static void SpawnLogsLocally(string planetName)
     {
         CustomStoryLogs.Logger.LogInfo($"Loading logs for: {planetName}");
-        foreach (CustomCollectableData collectableData in CustomStoryLogs.RegisteredCollectables[planetName])
-        {   
+        foreach (int index in CustomStoryLogs.PlanetCollectables[planetName])
+        {
+            LogCollectableData collectableData = CustomStoryLogs.Collectables[index];
+            
             string objName = "CustomStoryLog." + collectableData.LogID.ToString();
             
             if (GameObject.Find(objName)) continue;
@@ -258,8 +270,11 @@ public class CustomStoryLogs : BaseUnityPlugin
                     oldBox.center = newBox.center;
                 }
             }
+
+            CustomLogInteract interact = obj.GetComponent<CustomLogInteract>();
+            interact.storyLogID = collectableData.LogID;
+            interact.data = collectableData;
             
-            obj.GetComponent<CustomLogInteract>().storyLogID = collectableData.LogID;
             obj.name = objName;
             obj.transform.position = collectableData.Position;
             obj.transform.rotation = Quaternion.Euler(collectableData.Rotation);
@@ -271,8 +286,9 @@ public class CustomStoryLogs : BaseUnityPlugin
     public static void DespawnLogsLocally(string planetName)
     {
         CustomStoryLogs.Logger.LogInfo($"Removing logs for: {planetName}");
-        foreach (CustomCollectableData collectableData in CustomStoryLogs.RegisteredCollectables[planetName])
+        foreach (int index in CustomStoryLogs.PlanetCollectables[planetName])
         {   
+            LogCollectableData collectableData = CustomStoryLogs.Collectables[index];
             string objName = "CustomStoryLog." + collectableData.LogID.ToString();
             
             GameObject obj = GameObject.Find(objName);
@@ -281,5 +297,10 @@ public class CustomStoryLogs : BaseUnityPlugin
                 Destroy(obj);
             }
         }
+    }
+
+    public static void OnCollect()
+    {
+        CustomStoryLogs.Logger.LogInfo("Event test");
     }
 }
