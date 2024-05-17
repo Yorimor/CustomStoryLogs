@@ -12,7 +12,7 @@ using NetworkPrefabs = LethalLib.Modules.NetworkPrefabs;
 
 namespace CustomStoryLogs;
 
-public struct CustomLogData
+public class CustomLogData
 {
     public string ModGUID;
     public int LogID;
@@ -21,9 +21,10 @@ public struct CustomLogData
     public string LogName;
     public string LogText;
     public string Keyword;
+    public LogCollected Event;
 }
 
-public struct LogCollectableData
+public class LogCollectableData
 {
     public string ModGUID;
     public Vector3 Position;
@@ -66,8 +67,6 @@ public class CustomStoryLogs : BaseUnityPlugin
     public static GameObject CustomLogObj;
 
     public static List<GameObject> CustomModels = new List<GameObject>();
-
-    public static Dictionary<int, LogCollected> LogEvents = new Dictionary<int, LogCollected>();
     
     private void Awake()
     {
@@ -122,8 +121,9 @@ public class CustomStoryLogs : BaseUnityPlugin
     private static void AddTestLogs()
     {
         int modelID = RegisterCustomLogModel(MyAssets.LoadAsset<GameObject>("Assets/Yorimor/CustomStoryLogs/Cube.prefab"));
-        int logID = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "Model - Test", "Model Test\n\n/\\\\/");
+        int logID = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "Model - Test", "Model Test\n\n/\\\n\\/");
         RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, logID, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero, modelID);
+        RegisteredLogs[logID].Event += TestEvent;
     }
 
     private static void TestEvent()
@@ -239,8 +239,9 @@ public class CustomStoryLogs : BaseUnityPlugin
     {
         CustomStoryLogs.Logger.LogDebug($"Unlocking log {logID}");
         HUDManager.Instance.DisplayGlobalNotification($"Found journal entry: '{RegisteredLogs[logID].LogName}'");
-        GameObject.Find("CustomStoryLog." + logID.ToString())?.GetComponent<CustomLogInteract>().LocalCollectLog();
+        GameObject.Find("CustomStoryLog." + logID.ToString())?.GetComponent<CustomLogInteract>()?.LocalCollectLog();
         UnlockedLocal.Add(logID);
+        RegisteredLogs[logID]?.Event.Invoke();
     }
 
     private static void SpawnLogsLocally(string planetName)
