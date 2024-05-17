@@ -30,7 +30,6 @@ public struct LogCollectableData
     public Vector3 Rotation;
     public int LogID;
     public int ModelID;
-    public LogCollected Event;
 }
 
 public delegate void LogCollected();
@@ -67,6 +66,8 @@ public class CustomStoryLogs : BaseUnityPlugin
     public static GameObject CustomLogObj;
 
     public static List<GameObject> CustomModels = new List<GameObject>();
+
+    public static Dictionary<int, LogCollected> LogEvents = new Dictionary<int, LogCollected>();
     
     private void Awake()
     {

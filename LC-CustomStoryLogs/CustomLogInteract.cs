@@ -23,7 +23,6 @@ public class CustomLogInteract: NetworkBehaviour
     {
         this.collected = true;
         this.RemoveLogCollectible();
-        data.Event.Invoke();
     }
 
     private void Start()
