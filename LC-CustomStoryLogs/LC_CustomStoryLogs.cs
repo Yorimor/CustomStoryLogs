@@ -12,28 +12,7 @@ using NetworkPrefabs = LethalLib.Modules.NetworkPrefabs;
 
 namespace CustomStoryLogs;
 
-public class CustomLogData
-{
-    public string ModGUID;
-    public int LogID;
-    public bool Unlocked;
-    public bool Hidden;
-    public string LogName;
-    public string LogText;
-    public string Keyword;
-    public LogCollected Event;
-}
-
-public class LogCollectableData
-{
-    public string ModGUID;
-    public Vector3 Position;
-    public Vector3 Rotation;
-    public int LogID;
-    public int ModelID;
-}
-
-public delegate void LogCollected();
+public delegate void LogCollected(int logID);
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 [BepInDependency(LethalLib.Plugin.ModGUID)]
@@ -61,12 +40,13 @@ public class CustomStoryLogs : BaseUnityPlugin
     
     public static LethalServerMessage<int> UnlockLogServer = new LethalServerMessage<int>(identifier: "UnlockLog");
     public static LethalClientMessage<int> UnlockLogClient = new LethalClientMessage<int>(identifier: "UnlockLog");
-
     
     public static AssetBundle MyAssets;
     public static GameObject CustomLogObj;
 
     public static List<GameObject> CustomModels = new List<GameObject>();
+
+    public static LogCollected AnyLogCollectEvent;
     
     private void Awake()
     {
@@ -124,11 +104,19 @@ public class CustomStoryLogs : BaseUnityPlugin
         int logID = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "Model - Test", "Model Test\n\n/\\\n\\/");
         RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, logID, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero, modelID);
         RegisteredLogs[logID].Event += TestEvent;
+        RegisteredLogs[logID].UpdateText("New text");
+
+        AnyLogCollectEvent += TestEventAny;
     }
 
-    private static void TestEvent()
+    private static void TestEvent(int logID)
     {
-        Logger.LogInfo("TEST EVENT");
+        Logger.LogInfo($"TEST EVENT {logID}");
+    }
+
+    private static void TestEventAny(int logID)
+    {
+        Logger.LogInfo($"TEST EVENT ANY {logID}");
     }
 
     internal static void Patch()
@@ -241,7 +229,9 @@ public class CustomStoryLogs : BaseUnityPlugin
         HUDManager.Instance.DisplayGlobalNotification($"Found journal entry: '{RegisteredLogs[logID].LogName}'");
         GameObject.Find("CustomStoryLog." + logID.ToString())?.GetComponent<CustomLogInteract>()?.LocalCollectLog();
         UnlockedLocal.Add(logID);
-        RegisteredLogs[logID]?.Event.Invoke();
+        
+        RegisteredLogs[logID].Event?.Invoke(logID);
+        AnyLogCollectEvent?.Invoke(logID);
     }
 
     private static void SpawnLogsLocally(string planetName)
