@@ -44,7 +44,7 @@ public class JsonLogReader
     
     public static void LoadLogsFromJsonFile(string jsonPath)
     {
-        CustomStoryLogs.Logger.LogInfo($"Loading logs from {jsonPath}");
+        CustomStoryLogs.Logger.LogInfo($"Loading logs from {jsonPath.Split("BepInEx").Last()}");
         string content = File.ReadAllText(jsonPath);
         JsonLogsFile logsFile = new JsonLogsFile();
         
@@ -63,7 +63,7 @@ public class JsonLogReader
 
         foreach (JsonLogData logData in logsFile.logs.Values)
         {
-            CustomStoryLogs.Logger.LogInfo($"(Json log) Adding {logData.name} to {logData.moon} @ {logData.position}");
+            CustomStoryLogs.Logger.LogDebug($"(Json log) Adding {logData.name} to {logData.moon} @ {logData.position}");
 
             var logID = CustomStoryLogs.RegisterCustomLog(modGuid, logData.name, logData.text);
             CustomStoryLogs.RegisterCustomLogCollectable(modGuid, logID, logData.moon, logData.position, logData.rotation);
