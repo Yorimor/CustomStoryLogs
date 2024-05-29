@@ -31,7 +31,11 @@ public class JsonLogReader
     {
         foreach (string logsFolder in Directory.GetDirectories(Paths.PluginPath, "CustomStoryLogs", SearchOption.AllDirectories).ToList())
         {
-            string[] files = Directory.GetFiles(Path.Combine(logsFolder, "logs"));
+            string path = Path.Combine(logsFolder, "logs");
+            
+            if (!Directory.Exists(path)) continue;
+            
+            string[] files = Directory.GetFiles(path);
             foreach (string text in files)
             {
                 if (Path.GetExtension(text) == ".json" || Path.GetExtension(text) == ".txt")

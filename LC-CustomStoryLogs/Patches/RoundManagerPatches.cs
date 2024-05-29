@@ -10,9 +10,16 @@ public class RoundManagerPatches
     [HarmonyPostfix]
     private static void AddInLevelStoryLogs(RoundManager __instance, int randomSeed, SelectableLevel newLevel)
     {
-        string planetName = newLevel.PlanetName;
+        if (__instance.IsHost)
+        {
+            LoadLogsForLevel(newLevel.PlanetName);
+            LoadLogsForLevel(newLevel.sceneName);
+        }
+    }
 
-        if (CustomStoryLogs.PlanetCollectables.ContainsKey(planetName) && __instance.IsHost)
+    private static void LoadLogsForLevel(string planetName)
+    {
+        if (CustomStoryLogs.PlanetCollectables.ContainsKey(planetName))
         {
             CustomStoryLogs.Logger.LogDebug("Telling clients to spawn log objects");
             CustomStoryLogs.SpawnLogsServer.SendAllClients(planetName);

@@ -63,7 +63,7 @@ And that's it! My mod will automatically load the logs and place them in game fo
 Add a story log:
 ```csharp
 // public static int RegisterCustomLog(string modGUID, string logName, string text, bool unlocked=false, bool hidden=false)
-int myLogID = CustomStoryLogs.CustomStoryLogs.RegisterCustomLog(YOUR_MOD_GUID, "Log Name - May 09", "test\nunlocked\nnot hidden");
+int myLogID = CustomStoryLogs.CustomStoryLogs.RegisterCustomLog(YOUR_MOD_GUID, "Log Name - May 09", "test log\n\n:)");
 ```
 
 The function returns an integer which is used to uniquely identify the new log. It is created from a hash of your mods GUID and the first word in the log name.
@@ -77,10 +77,12 @@ You can also define if the log is already unlocked or hidden the terminal list.
 Add an interactable:
 ```csharp
 // public static void RegisterCustomLogCollectable(string modGUID, int logID, string planetName, Vector3 position, Vector3 rotation, int modelID=0)
-CustomStoryLogs.CustomStoryLogs.RegisterCustomLogCollectable(YOUR_MOD_GUID, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero);
+CustomStoryLogs.CustomStoryLogs.RegisterCustomLogCollectable(YOUR_MOD_GUID, myLogID, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero);
 ```
 
 This spawns the interactable on the Company moon just in front of the ship. Interactable objects are removed when leaving the moon.
+
+Planet name checks for the moons display name and scene name.
 
 </details>
 
@@ -163,6 +165,8 @@ Imperium is a very straight forward way to get coordinates in a moon, the other 
 #### Planned Features
 
 - [ ] Add custom log views, instead of having it all under `sigurd`
+- [ ] In game tool for placing logs
+- [ ] Add to nuget
 - [x] Events for when a log is collected
 - [x] Ability to use custom model/game objects for the pickup
 - [x] Add logs from text/json files

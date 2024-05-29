@@ -57,10 +57,10 @@
 
     <ItemGroup>
       <Reference Include="LethalLib">
-        <HintPath>C:\Users\jabba\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\Default\BepInEx\plugins\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
+        <HintPath>H:\R2mm\LethalCompany\profiles\DarylTest\BepInEx\plugins\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
       </Reference>
       <Reference Include="LethalNetworkAPI">
-        <HintPath>C:\Users\jabba\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\Default\BepInEx\plugins\xilophor-LethalNetworkAPI\LethalNetworkAPI\LethalNetworkAPI.dll</HintPath>
+        <HintPath>H:\R2mm\LethalCompany\profiles\DarylTest\BepInEx\plugins\xilophor-LethalNetworkAPI\LethalNetworkAPI\LethalNetworkAPI.dll</HintPath>
       </Reference>
     </ItemGroup>
 </Project>

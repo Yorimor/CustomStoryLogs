@@ -30,7 +30,7 @@ public class CustomStoryLogs : BaseUnityPlugin
     public static Dictionary<string, List<int>> PlanetCollectables = new Dictionary<string, List<int>>();
     public static Dictionary<int, LogCollectableData> Collectables = new Dictionary<int, LogCollectableData>();
     
-    public static string UnlockedSaveKey = $"{LethalNetworkAPI.MyPluginInfo.PLUGIN_GUID}-Unlocked";
+    public static string UnlockedSaveKey = $"{MyPluginInfo.PLUGIN_GUID}-Unlocked";
 
     public static LethalNetworkVariable<List<int>> UnlockedNetwork = new LethalNetworkVariable<List<int>>(identifier: "UnlockedList");
     public static List<int> UnlockedLocal = new List<int>();
@@ -101,8 +101,8 @@ public class CustomStoryLogs : BaseUnityPlugin
     private static void AddTestLogs()
     {
         int modelID = RegisterCustomLogModel(MyAssets.LoadAsset<GameObject>("Assets/Yorimor/CustomStoryLogs/Cube.prefab"));
-        int logID = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "Model - Test", "Model Test\n\n/\\\n\\/");
-        RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, logID, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero, modelID);
+        int logID = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "Test - Test", "Model Test\n\n/\\\n\\/");
+        RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, logID, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero);
         RegisteredLogs[logID].Event += TestEvent;
         RegisteredLogs[logID].UpdateText("New text");
 
@@ -112,6 +112,7 @@ public class CustomStoryLogs : BaseUnityPlugin
     private static void TestEvent(int logID)
     {
         Logger.LogInfo($"TEST EVENT {logID}");
+        RegisteredLogs[logID].UpdateText("new text :P");
     }
 
     private static void TestEventAny(int logID)
