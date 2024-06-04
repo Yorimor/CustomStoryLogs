@@ -22,6 +22,12 @@ public class TerminalPatches
 
         CustomStoryLogs.UnlockedLocal = CustomStoryLogs.UnlockedNetwork.Value;
 
+        foreach (int logID in CustomStoryLogs.UnlockedLocal)
+        {
+            CustomStoryLogs.RegisteredLogs[logID].Event.Invoke(logID);
+            // CustomStoryLogs.AnyLogCollectEvent.Invoke(logID);
+        }
+
         CustomStoryLogs.Logger.LogInfo("Adding logs");
         TerminalKeyword view = null;
         foreach (TerminalKeyword keyword in __instance.terminalNodes.allKeywords)
