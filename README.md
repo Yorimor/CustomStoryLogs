@@ -154,6 +154,8 @@ CustomStoryLogs.CustomStoryLogs.RegisteredLogs[logID].UpdateText("New Text");
 
 #### Useful links
 
+- [CustomStoryLogs Discord Channel](https://ptb.discord.com/channels/1168655651455639582/1238174635510730762)
+
 Imperium is a very straight forward way to get coordinates in a moon, the other two require some setup/learning.
 
 - [Imperium](https://thunderstore.io/c/lethal-company/p/giosuel/Imperium/) 

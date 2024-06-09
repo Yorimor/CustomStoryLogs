@@ -14,11 +14,15 @@ namespace CustomStoryLogs;
 
 public delegate void LogCollected(int logID);
 
-[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
 [BepInDependency(LethalLib.Plugin.ModGUID)]
 [BepInDependency(LethalNetworkAPI.MyPluginInfo.PLUGIN_GUID)]
 public class CustomStoryLogs : BaseUnityPlugin
 {
+    public const string PLUGIN_GUID = "Yorimor.CustomStoryLogs";
+    public const string PLUGIN_NAME = "CustomStoryLogs";
+    public const string PLUGIN_VERSION = "1.4.0";
+    
     public static CustomStoryLogs Instance { get; private set; } = null!;
     internal new static ManualLogSource Logger { get; private set; } = null!;
     internal static Harmony? Harmony { get; set; }
@@ -47,14 +51,16 @@ public class CustomStoryLogs : BaseUnityPlugin
     public static List<GameObject> CustomModels = new List<GameObject>();
 
     public static LogCollected AnyLogCollectEvent;
+
+    public string AssemblyLocation;
     
     private void Awake()
     {
         Logger = base.Logger;
         Instance = this;
         
-        string sAssemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        MyAssets = AssetBundle.LoadFromFile(Path.Combine(sAssemblyLocation, "yorimor.customlogs"));
+        AssemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        MyAssets = AssetBundle.LoadFromFile(Path.Combine(AssemblyLocation, "yorimor.customlogs"));
         if (MyAssets == null) {
             Logger.LogError("Failed to load custom assets.");
             return;
@@ -93,7 +99,7 @@ public class CustomStoryLogs : BaseUnityPlugin
 
         JsonLogReader.LoadLogsFromUserFiles();
 
-        Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} loaded!");
+        Logger.LogInfo($"{PLUGIN_GUID} v{PLUGIN_VERSION} loaded!");
         
         // AddTestLogs();
     }
@@ -101,8 +107,8 @@ public class CustomStoryLogs : BaseUnityPlugin
     private static void AddTestLogs()
     {
         int modelID = RegisterCustomLogModel(MyAssets.LoadAsset<GameObject>("Assets/Yorimor/CustomStoryLogs/Cube.prefab"));
-        int logID = RegisterCustomLog(MyPluginInfo.PLUGIN_GUID, "Test - Test", "Model Test\n\n/\\\n\\/");
-        RegisterCustomLogCollectable(MyPluginInfo.PLUGIN_GUID, logID, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero);
+        int logID = RegisterCustomLog(PLUGIN_GUID, "Test - Test", "Model Test\n\n/\\\n\\/");
+        RegisterCustomLogCollectable(PLUGIN_GUID, logID, "71 Gordion", new Vector3(-28,-2,-15), Vector3.zero);
         RegisteredLogs[logID].Event += TestEvent;
         RegisteredLogs[logID].UpdateText("New text");
 
