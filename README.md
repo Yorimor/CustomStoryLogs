@@ -10,11 +10,23 @@ This is my first mod intended for use by other people as a library, so the code 
 
 Logs can be added with code, or through a text/json file created with my [Log Builder](https://yorimor.github.io/CustomStoryLogsJsonBuilder/) tool!
 
-See the **Useful Links** section below, for tools to help with coordinates.
+
+Any questions or issues please post them in the [CustomStoryLogs Discord Channel!](https://ptb.discord.com/channels/1168655651455639582/1238174635510730762) on the Lethal Company Modding Discord.
 
 ---
 
 ### Guides
+
+<details>
+<summary>In Game Placement Tool</summary>
+
+Press `Alt + L` to activate/deactivate the tool, and `Alt + K` to activate/deactivate edit mode.
+
+Using the in game tool you can easily get the values for the position and rotation of wherever you want to place your log.
+
+With the edit mode, you can tweak the values, and export them to one of six json files for easy copying.
+
+</details>
 
 <details>
 <summary>Using the Log Builder</summary>
@@ -154,10 +166,6 @@ CustomStoryLogs.CustomStoryLogs.RegisteredLogs[logID].UpdateText("New Text");
 
 #### Useful links
 
-- [CustomStoryLogs Discord Channel](https://ptb.discord.com/channels/1168655651455639582/1238174635510730762)
-
-Imperium is a very straight forward way to get coordinates in a moon, the other two require some setup/learning.
-
 - [Imperium](https://thunderstore.io/c/lethal-company/p/giosuel/Imperium/) 
 - [Unity Explorer](https://thunderstore.io/c/lethal-company/p/Noop/UnityExplorer/)
 - [Asset Ripper](https://github.com/nomnomab/lc-project-patcher)
@@ -167,17 +175,19 @@ Imperium is a very straight forward way to get coordinates in a moon, the other 
 #### Planned Features
 
 - [ ] Add custom log views, instead of having it all under `sigurd`
-- [ ] In game tool for placing logs
 - [ ] Add to nuget
+- [ ] Refactor/rewrite
+- [x] In game tool for placing logs
 - [x] Events for when a log is collected
 - [x] Ability to use custom model/game objects for the pickup
 - [x] Add logs from text/json files
 
 ---
 
-#### Credits
+#### Credits/Thanks
 
 - Noah E. for helping so much in creating the Log Builder
 - Xilophor's LethalNetworkAPI and Project Template
 - Evaisa's LethaLib
 - Model used: https://elbolilloduro.itch.io/exploration-objects
+- Laventin's [StarshipDeliveryMod](https://thunderstore.io/c/lethal-company/p/Laventin/StarshipDeliveryMod/) placement tool
