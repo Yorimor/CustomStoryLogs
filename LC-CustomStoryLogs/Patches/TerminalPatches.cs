@@ -24,8 +24,8 @@ public class TerminalPatches
 
         foreach (int logID in CustomStoryLogs.UnlockedLocal)
         {
-            CustomStoryLogs.RegisteredLogs[logID].Event.Invoke(logID);
-            // CustomStoryLogs.AnyLogCollectEvent.Invoke(logID);
+            CustomStoryLogs.RegisteredLogs[logID].Event?.Invoke(logID);
+            CustomStoryLogs.AnyLogCollectEvent?.Invoke(logID);
         }
 
         CustomStoryLogs.Logger.LogInfo("Adding logs");

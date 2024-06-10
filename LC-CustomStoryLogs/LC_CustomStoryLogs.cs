@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using LethalNetworkAPI;
@@ -54,6 +55,8 @@ public class CustomStoryLogs : BaseUnityPlugin
 
     public string AssemblyLocation;
     
+    public static ConfigEntry<bool> ToolEnabled;
+    
     private void Awake()
     {
         Logger = base.Logger;
@@ -78,6 +81,9 @@ public class CustomStoryLogs : BaseUnityPlugin
 
         Patch();
 
+        ToolEnabled = Config.Bind("PlacementTool", "ToolEnabled", false,"Enable/Disable the in game placement tool");
+        Logger.LogInfo($"Placement Tool Enabled: {ToolEnabled.Value}");
+        
         UsedKeywords =
         [
             "buy", "pro flashlight", "money", "confirm", "deny", "help", "info", "store", "pro flashlight",
@@ -97,6 +103,8 @@ public class CustomStoryLogs : BaseUnityPlugin
             "disco", "tulip"
         ];
 
+        AnyLogCollectEvent += EmptyOnCollect;
+        
         JsonLogReader.LoadLogsFromUserFiles();
 
         Logger.LogInfo($"{PLUGIN_GUID} v{PLUGIN_VERSION} loaded!");
@@ -298,8 +306,8 @@ public class CustomStoryLogs : BaseUnityPlugin
         }
     }
 
-    public static void OnCollect()
+    public static void EmptyOnCollect(int logID)
     {
-        CustomStoryLogs.Logger.LogInfo("Event test");
+        
     }
 }

@@ -20,6 +20,8 @@ Any questions or issues please post them in the [CustomStoryLogs Discord Channel
 <details>
 <summary>In Game Placement Tool</summary>
 
+To start using this tool, you will first need to enable it in the config as it is off by default.
+
 Press `Alt + L` to activate/deactivate the tool, and `Alt + K` to activate/deactivate edit mode.
 
 Using the in game tool you can easily get the values for the position and rotation of wherever you want to place your log.

@@ -15,7 +15,7 @@ internal class PlayerControllerBPatch
     [HarmonyPostfix]
     public static void ConnectClientToPlayerObjectPatch(ref PlayerControllerB __instance)
     {
-        if(__instance.IsOwner)
+        if(__instance.IsOwner && __instance.IsHost && CustomStoryLogs.ToolEnabled.Value)
         {
             __instance.gameObject.AddComponent<LogPlacementTool>();
         }
