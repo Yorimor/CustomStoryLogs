@@ -155,6 +155,19 @@ CustomStoryLogs.CustomStoryLogs.RegisteredLogs[logID].Event += MyEvent;
 </details>
 
 <details>
+<summary>Config Options</summary>
+
+#### ToolEnabled
+
+For enabling/disabling the in game placement tool for log collectables.
+
+#### HideVanillaLogs
+
+For hiding the vanilla game log terminal entries and collectables.
+
+</details>
+
+<details>
 <summary>Miscellaneous</summary>
 
 #### Update Log Text
@@ -168,6 +181,7 @@ CustomStoryLogs.CustomStoryLogs.RegisteredLogs[logID].UpdateText("New Text");
 
 #### Useful links
 
+- [Lethal Company Modding Wiki](https://lethal.wiki/)
 - [Imperium](https://thunderstore.io/c/lethal-company/p/giosuel/Imperium/) 
 - [Unity Explorer](https://thunderstore.io/c/lethal-company/p/Noop/UnityExplorer/)
 - [Asset Ripper](https://github.com/nomnomab/lc-project-patcher)

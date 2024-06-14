@@ -22,7 +22,7 @@ public class CustomStoryLogs : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "Yorimor.CustomStoryLogs";
     public const string PLUGIN_NAME = "CustomStoryLogs";
-    public const string PLUGIN_VERSION = "1.4.0";
+    public const string PLUGIN_VERSION = "1.4.4";
     
     public static CustomStoryLogs Instance { get; private set; } = null!;
     internal new static ManualLogSource Logger { get; private set; } = null!;
@@ -56,6 +56,7 @@ public class CustomStoryLogs : BaseUnityPlugin
     public string AssemblyLocation;
     
     public static ConfigEntry<bool> ToolEnabled;
+    public static ConfigEntry<bool> HideVanillaLogs;
     
     private void Awake()
     {
@@ -83,6 +84,9 @@ public class CustomStoryLogs : BaseUnityPlugin
 
         ToolEnabled = Config.Bind("PlacementTool", "ToolEnabled", false,"Enable/Disable the in game placement tool");
         Logger.LogInfo($"Placement Tool Enabled: {ToolEnabled.Value}");
+
+        HideVanillaLogs = Config.Bind("VanillaLogs", "HideVanillaLogs", false,"Show/Hide the vanilla story logs");
+        Logger.LogInfo($"Hide Vanilla Logs: {HideVanillaLogs.Value}");
         
         UsedKeywords =
         [
@@ -167,7 +171,8 @@ public class CustomStoryLogs : BaseUnityPlugin
         newLog.LogID = (modGUID + newLog.Keyword).GetHashCode();
 
         RegisteredLogs[newLog.LogID] = newLog;
-
+        
+        Logger.LogDebug($"Added new log [{modGUID}/{newLog.Keyword}] with ID [{newLog.LogID}]");
         return newLog.LogID;
     }
 

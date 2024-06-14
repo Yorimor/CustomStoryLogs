@@ -24,8 +24,11 @@ public class TerminalPatches
 
         foreach (int logID in CustomStoryLogs.UnlockedLocal)
         {
-            CustomStoryLogs.RegisteredLogs[logID].Event?.Invoke(logID);
-            CustomStoryLogs.AnyLogCollectEvent?.Invoke(logID);
+            if (CustomStoryLogs.RegisteredLogs.ContainsKey(logID))
+            {
+                CustomStoryLogs.RegisteredLogs[logID].Event?.Invoke(logID);
+                CustomStoryLogs.AnyLogCollectEvent?.Invoke(logID);
+            }
         }
 
         CustomStoryLogs.Logger.LogInfo("Adding logs");
@@ -69,7 +72,7 @@ public class TerminalPatches
 
     [HarmonyPatch("TextPostProcess")]
     [HarmonyPrefix]
-    private static void FixInvalidUnlockedLogIDs(Terminal __instance, string modifiedDisplayText, TerminalNode node, ref string __result)
+    private static void FixInvalidUnlockedLogIDs(Terminal __instance, string modifiedDisplayText, TerminalNode node)
     {
         if (node.name.Contains("LogsHub"))
         {
@@ -92,6 +95,17 @@ public class TerminalPatches
                 }
             }
             __instance.newlyUnlockedStoryLogs = fixedNewLogs;
+        }
+    }
+
+    [HarmonyPatch("TextPostProcess")]
+    [HarmonyPrefix]
+    private static void RemoveVanillaLogs(Terminal __instance, TerminalNode node)
+    {
+        if (node.name.Contains("LogsHub") && CustomStoryLogs.HideVanillaLogs.Value)
+        {
+            CustomStoryLogs.Logger.LogDebug("Resetting vanilla unlocked logs to hide from terminal");
+            __instance.unlockedStoryLogs = new List<int>();
         }
     }
 
