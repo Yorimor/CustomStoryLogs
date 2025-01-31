@@ -12,17 +12,22 @@ internal class KeyBindManager
 
     public static InputAction CreateInputAction(string _inputName, string _binding, string _interactions)
     {
-        if(customActionMap == null)
+        if (customActionMap == null)
         {
             customActionMap = new InputActionMap("CustomStoryLogs");
         }
-        customActionMap.Disable();
 
-        InputAction newInputAction = customActionMap.AddAction(_inputName);
-        newInputAction.AddBinding(_binding).WithInteraction(_interactions);
-        
-        customActionMap.Enable();
+        InputAction newInputAction = customActionMap.FindAction(_inputName);
 
+        if (newInputAction == null) {
+            CustomStoryLogs.Logger.LogInfo("ACTION NULL");
+            customActionMap.Disable();
+
+            newInputAction = customActionMap.AddAction(_inputName);
+            newInputAction.AddBinding(_binding).WithInteraction(_interactions);
+
+            customActionMap.Enable();
+        }
         return newInputAction;
     }
 }

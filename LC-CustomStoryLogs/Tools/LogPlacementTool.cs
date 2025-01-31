@@ -51,7 +51,8 @@ public class LogPlacementTool: MonoBehaviour
 
     void Update()
     {
-        if (modifierKey.IsPressed())
+        if (modifierKey.IsPressed()) // TODO: fix null ref here if exit save and enter another
+        // InvalidOperationException: Cannot add action with duplicate name 'EscKey' to set 'CustomStoryLogs'
         {
             if (activateToolAction.triggered)
             {

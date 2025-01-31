@@ -58,10 +58,10 @@
 
     <ItemGroup>
       <Reference Include="LethalLib">
-        <HintPath>H:\R2mm\LethalCompany\profiles\DarylTest\BepInEx\plugins\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
+        <HintPath>..\..\..\..\..\..\home\liam\.config\r2modmanPlus-local\LethalCompany\profiles\Dev\BepInEx\plugins\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
       </Reference>
       <Reference Include="LethalNetworkAPI">
-        <HintPath>H:\R2mm\LethalCompany\profiles\DarylTest\BepInEx\plugins\xilophor-LethalNetworkAPI\LethalNetworkAPI\LethalNetworkAPI.dll</HintPath>
+        <HintPath>..\..\..\..\..\..\home\liam\.config\r2modmanPlus-local\LethalCompany\profiles\Dev\BepInEx\plugins\xilophor-LethalNetworkAPI\LethalNetworkAPI\LethalNetworkAPI.dll</HintPath>
       </Reference>
     </ItemGroup>
 </Project>
