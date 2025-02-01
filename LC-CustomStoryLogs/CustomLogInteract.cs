@@ -34,10 +34,21 @@ public class CustomLogInteract: NetworkBehaviour
 
     private void RemoveLogCollectible()
     {
-        foreach (Renderer componentsInChild in this.gameObject.GetComponentsInChildren<MeshRenderer>())
-            componentsInChild.enabled = false;
-        this.gameObject.GetComponent<InteractTrigger>().interactable = false;
-        foreach (Collider componentsInChild in this.GetComponentsInChildren<Collider>())
-            componentsInChild.enabled = false;
+        if (this.gameObject.GetComponent<InteractTrigger>() != null)
+        {
+            this.gameObject.GetComponent<InteractTrigger>().interactable = false;
+        }
+        
+        foreach (UnityEngine.MeshRenderer meshChild in this.gameObject.GetComponentsInChildren<MeshRenderer>())
+            if (meshChild != null)
+            {
+                meshChild.enabled = false;
+            }
+
+        foreach (Collider colliderChild in this.GetComponentsInChildren<Collider>())
+            if (colliderChild != null)
+            {
+                colliderChild.enabled = false;
+            }
     }
 }
