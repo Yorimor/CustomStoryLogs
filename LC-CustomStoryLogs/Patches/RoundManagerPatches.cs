@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using UnityEngine.Yoga;
 
 namespace CustomStoryLogs.Patches;
 
@@ -22,7 +21,7 @@ public class RoundManagerPatches
         if (CustomStoryLogs.PlanetCollectables.ContainsKey(planetName))
         {
             CustomStoryLogs.Logger.LogDebug("Telling clients to spawn log objects");
-            CustomStoryLogs.SpawnLogsServer.SendAllClients(planetName);
+            CustomStoryLogs.SpawnLogs.SendClients(planetName);
         }
     }
 }

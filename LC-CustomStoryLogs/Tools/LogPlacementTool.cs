@@ -15,7 +15,7 @@ public class LogPlacementTool: MonoBehaviour
     public InputAction escKey;
     
     private GameObject dummyLogPrefab;
-    private GameObject dummyLog = null;
+    private GameObject dummyLog;
     
     private GameObject canvasPrefab;
     private Transform canvas;
@@ -23,7 +23,7 @@ public class LogPlacementTool: MonoBehaviour
     
     private LayerMask layerMask;
 
-    private Camera cam = null;
+    private Camera cam;
     private PlayerControllerB playerController;
     
     private bool isToolActive = false;

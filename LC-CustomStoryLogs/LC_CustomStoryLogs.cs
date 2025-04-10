@@ -22,7 +22,7 @@ public class CustomStoryLogs : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "Yorimor.CustomStoryLogs";
     public const string PLUGIN_NAME = "CustomStoryLogs";
-    public const string PLUGIN_VERSION = "1.4.6";
+    public const string PLUGIN_VERSION = "1.5.0";
     
     public static CustomStoryLogs Instance { get; private set; } = null!;
     internal new static ManualLogSource Logger { get; private set; } = null!;
@@ -37,14 +37,19 @@ public class CustomStoryLogs : BaseUnityPlugin
     
     public static string UnlockedSaveKey = $"{MyPluginInfo.PLUGIN_GUID}-Unlocked";
 
-    public static LethalNetworkVariable<List<int>> UnlockedNetwork = new LethalNetworkVariable<List<int>>(identifier: "UnlockedList");
+    // public static LNetworkVariable<List<int>> UnlockedNetwork = new LNetworkVariable<List<int>>(identifier: "UnlockedList");
+    public static LNetworkVariable<List<int>> UnlockedNetwork = LNetworkVariable<List<int>>.Connect(identifier: "UnlockedList");
     public static List<int> UnlockedLocal = new List<int>();
     
-    public static LethalServerMessage<string> SpawnLogsServer = new LethalServerMessage<string>(identifier: "SpawnLogs");
-    public static LethalClientMessage<string> SpawnLogsClient = new LethalClientMessage<string>(identifier: "SpawnLogs");
+    // https://github.com/Xilophor/lethal-network-api-docs/blob/rework/docs/api/LethalNetworkAPI.LNetworkMessage.md
     
-    public static LethalServerMessage<int> UnlockLogServer = new LethalServerMessage<int>(identifier: "UnlockLog");
-    public static LethalClientMessage<int> UnlockLogClient = new LethalClientMessage<int>(identifier: "UnlockLog");
+    // public static LethalServerMessage<string> SpawnLogsServer = new LethalServerMessage<string>(identifier: "SpawnLogs");
+    // public static LethalClientMessage<string> SpawnLogsClient = new LethalClientMessage<string>(identifier: "SpawnLogs");
+    public static LNetworkMessage<string> SpawnLogs = LNetworkMessage<string>.Connect(identifier: "SpawnLogs", null, SpawnLogsLocally);
+    
+    // public static LethalServerMessage<int> UnlockLogServer = new LethalServerMessage<int>(identifier: "UnlockLog");
+    // public static LethalClientMessage<int> UnlockLogClient = new LethalClientMessage<int>(identifier: "UnlockLog");
+    public static LNetworkMessage<int> UnlockLogMsg = LNetworkMessage<int>.Connect(identifier: "UnlockLog", ReceiveUnlockFromClient, ReceiveUnlockMsgFromServer);
     
     public static AssetBundle MyAssets;
     public static GameObject CustomLogObj;
@@ -76,9 +81,9 @@ public class CustomStoryLogs : BaseUnityPlugin
 
         UnlockedNetwork.Value = new List<int>();
 
-        SpawnLogsClient.OnReceived += SpawnLogsLocally;
-        UnlockLogServer.OnReceived += ReceiveUnlockFromClient;
-        UnlockLogClient.OnReceived += ReceiveUnlockMsgFromServer;
+        // SpawnLogsClient.OnReceived += SpawnLogsLocally;
+        // UnlockLogServer.OnReceived += ReceiveUnlockFromClient;
+        // UnlockLogClient.OnReceived += ReceiveUnlockMsgFromServer;
 
         Patch();
 
@@ -229,7 +234,7 @@ public class CustomStoryLogs : BaseUnityPlugin
         UnlockedNetwork.Value.Add(logID);
         
         CustomStoryLogs.Logger.LogDebug($"Telling clients to unlock log {logID}");
-        UnlockLogServer.SendAllClients(logID);
+        UnlockLogMsg.SendClients(logID);
     }
 
     public static List<int> GetUnlockedList()
@@ -240,7 +245,7 @@ public class CustomStoryLogs : BaseUnityPlugin
     public static void UnlockStoryLogOnServer(int logID)
     {
         CustomStoryLogs.Logger.LogDebug($"Telling server to unlock log {logID}");
-        UnlockLogClient.SendServer(logID);
+        UnlockLogMsg.SendServer(logID);
     }
 
     private static void ReceiveUnlockMsgFromServer(int logID)
