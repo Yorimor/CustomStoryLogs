@@ -22,7 +22,7 @@ public class CustomStoryLogs : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "Yorimor.CustomStoryLogs";
     public const string PLUGIN_NAME = "CustomStoryLogs";
-    public const string PLUGIN_VERSION = "1.5.0";
+    public const string PLUGIN_VERSION = "1.5.1";
     
     public static CustomStoryLogs Instance { get; private set; } = null!;
     internal new static ManualLogSource Logger { get; private set; } = null!;
@@ -239,7 +239,21 @@ public class CustomStoryLogs : BaseUnityPlugin
 
     public static List<int> GetUnlockedList()
     {
-        return UnlockedNetwork.Value.Union(UnlockedLocal).ToList();
+        // thanks to sciencebird
+        if (CustomStoryLogs.UnlockedNetwork.Value == null)
+        {
+            return UnlockedLocal;
+        }
+        
+        foreach (int id in UnlockedNetwork.Value)
+        {
+            if (!UnlockedLocal.Contains(id))
+            {
+                UnlockedLocal.Add(id);
+            }
+        }
+
+        return UnlockedLocal;
     }
 
     public static void UnlockStoryLogOnServer(int logID)
