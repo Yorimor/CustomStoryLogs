@@ -14,7 +14,7 @@ public class CustomLogInteract: NetworkBehaviour
         if (NetworkManager.Singleton == null || GameNetworkManager.Instance == null || this.collected || storyLogID == -1)
             return;
 
-        if (CustomStoryLogs.GetUnlockedList().Contains(this.storyLogID)) return;
+        if (CustomStoryLogs.IsLogUnlocked(this.storyLogID)) return;
 
         CustomStoryLogs.UnlockStoryLogOnServer(storyLogID);
     }
@@ -28,8 +28,7 @@ public class CustomLogInteract: NetworkBehaviour
     private void Start()
     {
         name = "CustomStoryLog." + storyLogID.ToString();
-        if (CustomStoryLogs.GetUnlockedList().Contains(this.storyLogID))
-            this.RemoveLogCollectible();
+        if (CustomStoryLogs.IsLogUnlocked(this.storyLogID)) this.RemoveLogCollectible();
     }
 
     private void RemoveLogCollectible()
