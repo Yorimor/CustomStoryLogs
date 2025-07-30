@@ -22,7 +22,7 @@ public class CustomStoryLogs : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "Yorimor.CustomStoryLogs";
     public const string PLUGIN_NAME = "CustomStoryLogs";
-    public const string PLUGIN_VERSION = "1.5.1";
+    public const string PLUGIN_VERSION = "1.5.2";
     
     public static CustomStoryLogs Instance { get; private set; } = null!;
     internal new static ManualLogSource Logger { get; private set; } = null!;
@@ -38,8 +38,8 @@ public class CustomStoryLogs : BaseUnityPlugin
     public static string UnlockedSaveKey = $"{MyPluginInfo.PLUGIN_GUID}-Unlocked";
 
     // public static LNetworkVariable<List<int>> UnlockedNetwork = new LNetworkVariable<List<int>>(identifier: "UnlockedList");
-    public static LNetworkVariable<List<int>> UnlockedNetwork = LNetworkVariable<List<int>>.Connect(identifier: "UnlockedList");
-    public static List<int> UnlockedLocal = new List<int>();
+    public static LNetworkVariable<List<int>?> UnlockedNetwork = LNetworkVariable<List<int>?>.Connect(identifier: "UnlockedList");
+    public static List<int>? UnlockedLocal = new List<int>();
     
     // https://github.com/Xilophor/lethal-network-api-docs/blob/rework/docs/api/LethalNetworkAPI.LNetworkMessage.md
     
@@ -239,6 +239,8 @@ public class CustomStoryLogs : BaseUnityPlugin
 
     public static List<int> GetUnlockedList()
     {
+        UnlockedLocal ??= [];
+        
         // thanks to sciencebird
         if (CustomStoryLogs.UnlockedNetwork.Value == null)
         {
@@ -332,6 +334,28 @@ public class CustomStoryLogs : BaseUnityPlugin
 
     public static void EmptyOnCollect(int logID)
     {
-        
+        // Intentionally empty
+    }
+
+    public static bool IsLogUnlocked(int logID)
+    {
+        try
+        {
+            return GetUnlockedList().Contains(logID);
+        }
+        catch (NullReferenceException e)
+        {
+            CustomStoryLogs.Logger.LogError($"{e}");
+            CustomStoryLogs.Logger.LogError($"Error in IsLogUnlocked() for LogID {logID}, returning false");
+            
+            CustomStoryLogs.Logger.LogDebug($"UnlockedNetwork.Value -> {UnlockedNetwork.Value?.ToString()}");
+            CustomStoryLogs.Logger.LogDebug($"UnlockedLocal -> {UnlockedLocal?.ToString()}");
+            
+            // Make lists not null if needed after logging error
+            UnlockedNetwork.Value ??= [];
+            UnlockedLocal ??= [];
+        }
+
+        return false;
     }
 }
